@@ -1,5 +1,10 @@
 package main;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Scanner;
 
 public class App 
@@ -7,11 +12,12 @@ public class App
     public static void main( String[] args ) {
         Scanner sc = new Scanner(System.in);
 
+        String FILENAME = "File.txt";
         University university = new University();
 
         boolean exit = false;
         while(!exit) {
-            System.out.println("1) Lisää opiskelija, 2) Listaa opiskelijat, 3) Lisää opiskelijalle suorite, 4) Listaa opiskelijan suoritteet, 5) Laske opiskelijan suoritusten keskiarvo, 6) LAske opiskelijan suoritusten mediaani, 7) Tallenna opiskelijat tiedostoon, 8) Lataa opiskelijat tiedostosta, 0) Lopeta ohjelma");
+            System.out.println("1) Lisää opiskelija, 2) Listaa opiskelijat, 3) Lisää opiskelijalle suorite, 4) Listaa opiskelijan suoritteet, 5) Laske opiskelijan suoritusten keskiarvo, 6) Laske opiskelijan suoritusten mediaani, 7) Tallenna opiskelijat tiedostoon, 8) Lataa opiskelijat tiedostosta, 0) Lopeta ohjelma");
 
             if(sc.hasNext()) {
                 int i = 0;
@@ -20,7 +26,7 @@ public class App
 
                 switch(i) {
                     case 1:
-                        System.out.println("Anna opiskelijalle nimi?");
+                        System.out.println("Anna opiskelijan nimi?");
                         String name = sc.nextLine();
                         System.out.println("Anna opiskelijan opiskelijanumero:");
                         int studentNumber = Integer.parseInt(sc.nextLine());
@@ -68,15 +74,25 @@ public class App
                         int index6 = Integer.parseInt(sc.nextLine());
 
                         double median = Calculator.getMedianGrade(university.students, index6);
-                        System.out.println("Mediaani on: " + median);
+                        System.out.println("Mediaani on " + median);
                         break;
 
                     case 7:
-                        university.saveStudents();
+                        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILENAME))) {
+                            oos.writeObject(university);
+                            System.out.println("Tiedot tallennettu.");
+                        } catch (IOException e) {
+                            System.out.println("Tiedoston tallennus epäonnistui: " + e.getMessage());
+                        }
                         break;
 
                     case 8:
-                        university.loadStudents();
+                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILENAME))) {
+                            university = (University) ois.readObject(); // Assign loaded object to university variable
+                            System.out.println("Opiskelijat ladattu tiedostosta.");
+                        } catch (IOException | ClassNotFoundException e) {
+                            System.out.println("Tiedoston lukeminen epäonnistui: " + e.getMessage());
+                        }
                         break;
 
                     case 0:
